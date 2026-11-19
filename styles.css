@@ -578,8 +578,9 @@ mark{ background:rgba(216,31,54,.32); color:#fff; padding:0 2px; border-radius:1
   background:rgba(8,8,11,.94);
   -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
 }
-/* The hosting platform injects a fixed badge in the bottom-right corner
-   (#minimax-floating-ball, 217x40 at bottom:20 right:20). The badge is
+/* Two hosts inject a fixed badge in the bottom-right corner: the
+   hosting platform (#minimax-floating-ball, 217x40 at bottom:20 right:20)
+   and Netlify (#nl-badge-frame, a 194x64 iframe). The badge is
    never hidden — our own transport row is lifted above its band instead.
    The body class is added by app.js; the :has() selector is a fallback
    for browsers that support it. Two separate rules on purpose: an
@@ -587,7 +588,11 @@ mark{ background:rgba(216,31,54,.32); color:#fff; padding:0 2px; border-radius:1
 body.has-host-badge .concert__foot{
   padding-bottom:calc(max(11px, var(--safe-bottom, 0px)) + var(--host-badge-band, 68px));
 }
-body:has(#minimax-floating-ball) .concert__foot{
+body:has(#minimax-floating-ball) .concert__foot,
+/* backstop in case the script has not measured the badge yet */
+body:has(#nl-badge-frame){ --host-badge-band:96px; }
+body:has(#nl-badge-frame) .concert__foot,
+body:has(#netlify-badge) .concert__foot{
   padding-bottom:calc(max(11px, var(--safe-bottom, 0px)) + var(--host-badge-band, 68px));
 }
 .concert__foot span{ font-family:var(--font-mono); font-size:.56rem; letter-spacing:.15em; text-transform:uppercase; color:var(--ash); }
@@ -777,11 +782,15 @@ body:has(#minimax-floating-ball) .concert__foot{
   body.has-host-badge .tabbar{
     padding-bottom:calc(4px + var(--safe-bottom, 0px) + var(--host-badge-band, 68px));
   }
-  body:has(#minimax-floating-ball) .tabbar{
+  body:has(#minimax-floating-ball) .tabbar,
+  body:has(#nl-badge-frame) .tabbar,
+  body:has(#netlify-badge) .tabbar{
     padding-bottom:calc(4px + var(--safe-bottom, 0px) + var(--host-badge-band, 68px));
   }
   body.has-host-badge .main{ padding-bottom:168px; }
-  body:has(#minimax-floating-ball) .main{ padding-bottom:168px; }
+  body:has(#minimax-floating-ball) .main,
+  body:has(#nl-badge-frame) .main,
+  body:has(#netlify-badge) .main{ padding-bottom:168px; }
   .topbar{ padding:calc(10px + var(--safe-top, 0px)) calc(16px + var(--safe-right, 0px)) 10px calc(16px + var(--safe-left, 0px)); }
   .lockup__sub{ display:none; }
   .iconbtn--only-mobile{ display:inline-flex; }

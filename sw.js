@@ -18,7 +18,7 @@
       missing, so the UI can say "offline pack incomplete — N of M
       files" instead of guessing from a timer.
    ═══════════════════════════════════════════════════════════════ */
-const VERSION = 'mcr-lyrics-v2';
+const VERSION = 'mcr-lyrics-v3';
 const CACHE_PREFIX = 'mcr-lyrics';
 const PACK_STATUS = 'mcr:pack-status';
 

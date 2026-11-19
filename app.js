@@ -1293,6 +1293,15 @@
   }
 
   /* ── about ─────────────────────────────────────────────── */
+  /* The build stamp is written by the build (rebuild_all.py) into a meta
+     tag, so everyone can see at a glance whether their phone picked up
+     the latest build. */
+  function buildStamp() {
+    var el = document.querySelector('meta[name="mcr-build"]');
+    var v = el ? el.getAttribute('content') : '';
+    return v ? ' · <strong>' + v + '</strong>' : '';
+  }
+
   function renderAbout() {
     var m = S.data.meta;
     $('#aboutBody').innerHTML =
@@ -1338,7 +1347,8 @@
         '<span class="signature__rule" aria-hidden="true"></span>' +
         '<span class="signature__date"><time datetime="2026-11-18">18 November 2026</time></span>' +
       '</div>' +
-      '<p class="mono">Built ' + m.generated + ' · ' + m.withLyrics + ' of ' + m.songCount + ' songs with lyrics</p>' +
+      '<p class="mono">Built ' + m.generated + ' · ' + m.withLyrics + ' of ' + m.songCount + ' songs with lyrics' +
+      buildStamp() + '</p>' +
       '<p class="mono" style="opacity:.7">Lyrics are reproduced here for personal, non-commercial reference. ' +
       'All words and music belong to their respective rights holders.</p>';
     var ib = $('#installBtn');
@@ -1741,17 +1751,33 @@
   wireConcertLifecycle();
 
   /* ── host badge guard ──────────────────────────────────────────────
-     The hosting platform injects a fixed badge (#minimax-floating-ball,
-     217x40, bottom-right, z-index 9999). It must never be hidden — we
-     only tell the CSS that something occupies the bottom-right corner so
-     the concert transport row is lifted above that band. */
+     Two hosts inject a fixed badge into the bottom-right corner:
+     the hosting platform (#minimax-floating-ball, 217x40) and Netlify
+     (#nl-badge-frame, a 194x64 iframe). Both sit on top of the tab bar
+     and swallow the taps meant for Setlist and About. Neither badge may
+     ever be hidden — we only tell the CSS that something occupies the
+     bottom-right corner, so the tab bar and the concert transport row are
+     lifted above that band. */
   (function hostBadgeGuard() {
-    var SEL = '#minimax-floating-ball';
+    var SEL = '#minimax-floating-ball, #nl-badge-frame, #netlify-badge';
     var pending = false;
     function apply() {
       pending = false;
-      if (document.querySelector(SEL)) document.body.classList.add('has-host-badge');
-      else document.body.classList.remove('has-host-badge');
+      var badge = document.querySelector(SEL);
+      if (!badge) {
+        document.body.classList.remove('has-host-badge');
+        document.body.style.removeProperty('--host-badge-band');
+        return;
+      }
+      document.body.classList.add('has-host-badge');
+      /* Measure the band the badge really occupies instead of guessing:
+         the platform's badge reaches 60px up the screen, Netlify's 82px.
+         A fixed guess leaves half the badge sitting on the tab bar. */
+      var r = badge.getBoundingClientRect();
+      var band = Math.max(68, Math.ceil(window.innerHeight - r.top) + 12);
+      document.body.style.setProperty('--host-badge-band', band + 'px');
+      /* the badge may still be laying out — look again in a moment */
+      if (r.height === 0) setTimeout(apply, 150);
     }
     function schedule() {
       if (pending) return;
@@ -1764,6 +1790,8 @@
     }
     window.addEventListener('load', apply);
     window.addEventListener('resize', schedule);
+    setTimeout(apply, 400);
+    setTimeout(apply, 1500);
   })();
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
