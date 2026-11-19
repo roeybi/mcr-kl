@@ -1,0 +1,37 @@
+# Privacy — no outbound connections, ever.
+#
+# The hosting platform injects its own traffic-analytics script into the
+# served HTML. It beacons the current route to a third party on every
+# route change, which breaks the promise this app makes ("nothing is
+# uploaded, nothing is tracked"). connect-src 'self' blocks the beacon
+# (sendBeacon and fetch are both governed by connect-src) and leaves the
+# app's own same-origin service-worker fetches alone.
+#
+# The identical policy is in index.html as a <meta http-equiv> tag and
+# in netlify.toml. The response header wins over the meta tag, so the
+# three copies have to stay identical — build/test_offline.py asserts it.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'
+
+# Serve the web app manifest with the right type (some hosts guess wrong).
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600
+
+# The service worker must never be cached, or updates never reach the phone.
+/sw.js
+  Cache-Control: no-cache, must-revalidate
+  Service-Worker-Allowed: /
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+# The lyric pack: allow revalidation so a refreshed pack lands on the next open.
+/data/lyrics.js
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/fonts/*
+  Cache-Control: public, max-age=604800
+
+/icons/*
+  Cache-Control: public, max-age=604800

@@ -1,0 +1,76 @@
+# The Black Parade — MCR offline lyric book
+#
+# 100% static: no build step, no dependencies, no functions, no backend.
+# Everything the app needs is already in this folder.
+
+[build]
+  publish = "."
+  command = ""
+
+# Privacy — no outbound connections, ever.
+#
+# The hosting platform injects its own traffic-analytics script into the
+# served HTML. It beacons the current route to a third party on every
+# route change, which breaks the promise this app makes ("nothing is
+# uploaded, nothing is tracked"). connect-src 'self' blocks the beacon
+# (sendBeacon and fetch are both governed by connect-src) and leaves the
+# app's own same-origin service-worker fetches alone.
+#
+# The identical policy is in index.html as a <meta http-equiv> tag and
+# in _headers. The response header wins over the meta tag, so the three
+# copies have to stay identical — build/test_offline.py asserts it.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'"
+
+# Serve the web app manifest with the right type (some hosts guess wrong
+# and Chrome will refuse to install the app if the type is off).
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+    Cache-Control = "public, max-age=3600"
+
+# The service worker must never be cached, or updates never reach the phone.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+# The shell revalidates so a fresh deploy is picked up on the next open.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+# The lyric pack: revalidate so an updated pack lands without a hard refresh.
+[[headers]]
+  for = "/data/lyrics.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+# Same for the timed-lyrics pack.
+[[headers]]
+  for = "/data/timings.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+# Fonts and icons are stable and safe to sit on for a week.
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Routing is hash-based (#/song/xyz) so it never hits the server, but this
+# keeps plain-path deep links working if anyone ever shares one.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

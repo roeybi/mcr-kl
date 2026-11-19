@@ -1,0 +1,3 @@
+# Hash-based routing (#/song/xyz) never hits the server, but this keeps
+# deep links working if anyone ever shares a path instead of a hash.
+/*    /index.html   200

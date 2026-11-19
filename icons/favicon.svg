@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><radialGradient id="g" cx="22%" cy="8%" r="78%">
+    <stop offset="0" stop-color="#3a0d14"/><stop offset="1" stop-color="#08080b"/>
+  </radialGradient></defs>
+  <rect width="64" height="64" fill="url(#g)"/>
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#d81f36" stroke-width="2"/>
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#f4efe6" stroke-opacity=".25" stroke-width="1"/>
+  <path d="M32 8v48M8 32h48" stroke="#f4efe6" stroke-opacity=".22" stroke-width="1"/>
+  <text x="32" y="43" font-family="Impact, 'Arial Narrow', sans-serif" font-size="27"
+        font-weight="700" text-anchor="middle" fill="#f4efe6" letter-spacing="1">MCR</text>
+</svg>
